@@ -1,0 +1,25 @@
+stages:
+  - lint
+  - test
+  - build
+
+lint:
+  stage: lint
+  image: koalaman/shellcheck-alpine:stable
+  script:
+    - shellcheck hello.sh test_hello.sh
+
+test:
+  stage: test
+  image: bash:5
+  script:
+    - ./test_hello.sh
+
+build:
+  stage: build
+  image: bash:5
+  script:
+    - tar -czf sample-app.tar.gz hello.sh
+  artifacts:
+    paths:
+      - sample-app.tar.gz
