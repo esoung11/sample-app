@@ -2,6 +2,7 @@ stages:
   - lint
   - test
   - build
+  - dockerize
 
 lint:
   stage: lint
@@ -23,3 +24,19 @@ build:
   artifacts:
     paths:
       - sample-app.tar.gz
+
+docker-build:
+  stage: dockerize
+  image: docker:27-cli
+  services:
+    - name: docker:27-dind
+      command: ["--insecure-registry=10.10.20.10:5050"]
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+    IMAGE_TAG: "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
+  script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    - docker build -t "$IMAGE_TAG" .
+    - docker push "$IMAGE_TAG"
+    
